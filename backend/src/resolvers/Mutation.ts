@@ -1,55 +1,88 @@
 import { PubSub } from "graphql-subscriptions";
+import AWS from "aws-sdk";
+
+// Configure AWS SDK
+const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const pubSub = new PubSub();
 const TODO_CREATED = "TODO_CREATED";
 const TODO_UPDATED = "TODO_UPDATED";
 const TODO_DELETED = "TODO_DELETED";
 
-const todos = [
-    { id: "1", title: "Learn GraphQL", description: "Understand GraphQL basics", completed: false},
-    { id: "2", title: "Build GraphQL API", description: "Create a GraphQL API for todos", completed: true },
-];
+// DynamoDB Table Name
+const TODOS_TABLE = "Todos";  // Change this based on your DynamoDB table name
 
 export const Mutation = {
-    createTodo: (_: any, { title, description }: { title: string; description: string }) => {
+    // Create a new todo
+    createTodo: async (_: any, { title, description }: { title: string; description: string }) => {
         const newTodo = {
-            id: Date.now().toString(),
+            id: Date.now().toString(),  // Generate a unique ID
             title,
             description,
-            completed: false
+            completed: false,
         };
-        todos.push(newTodo);
-        pubSub.publish(TODO_CREATED, { todoCreated: newTodo });
-        return newTodo;
+
+        // Insert into DynamoDB
+        const params = {
+            TableName: TODOS_TABLE,
+            Item: newTodo,
+        };
+
+        try {
+            await dynamoDb.put(params).promise();  // Insert the new todo
+            pubSub.publish(TODO_CREATED, { todoCreated: newTodo });
+            return newTodo;
+        } catch (error) {
+            console.error("Error creating todo", error);
+            throw new Error("Could not create todo");
+        }
     },
 
-    updateTodo: (_: any, { id, title, description, completed }: { id: string, title?: string, description?: string, completed?: boolean }) => {
-        const todoIndex = todos.findIndex(todo => todo.id === id);
-        if (todoIndex === -1) {
-            throw new Error("Todo not found");
-        }
-
-        // Ensure default values for optional fields
-        const updatedTodo = { 
-            ...todos[todoIndex], 
-            title: title ?? todos[todoIndex].title,   // If title is undefined, keep the old one
-            description: description ?? todos[todoIndex].description, // Same for description
-            completed: completed ?? todos[todoIndex].completed, // Same for completed
+    // Update a todo
+    updateTodo: async (_: any, { id, title, description, completed }: { id: string, title?: string, description?: string, completed?: boolean }) => {
+        const todoParams = {
+            TableName: TODOS_TABLE,
+            Key: { id },
+            UpdateExpression: "set #title = :title, #description = :description, completed = :completed",
+            ExpressionAttributeNames: {
+                "#title": "title",
+                "#description": "description",
+            },
+            ExpressionAttributeValues: {
+                ":title": title ?? null,
+                ":description": description ?? null,
+                ":completed": completed ?? null,
+            },
+            ReturnValues: "ALL_NEW",  // Return the updated item
         };
-        todos[todoIndex] = updatedTodo;
-        pubSub.publish(TODO_UPDATED, { todoUpdated: updatedTodo });
-        return updatedTodo;
+
+        try {
+            const result = await dynamoDb.update(todoParams).promise();
+            const updatedTodo = result.Attributes;
+            pubSub.publish(TODO_UPDATED, { todoUpdated: updatedTodo });
+            return updatedTodo;
+        } catch (error) {
+            console.error("Error updating todo", error);
+            throw new Error("Could not update todo");
+        }
     },
 
-    deleteTodo: (_: any, { id }: { id: string }) => {
-        const todoIndex = todos.findIndex(todo => todo.id === id);
-        if (todoIndex === -1) {
-            throw new Error("Todo not found");
+    // Delete a todo
+    deleteTodo: async (_: any, { id }: { id: string }) => {
+        const params = {
+            TableName: TODOS_TABLE,
+            Key: { id },
+        };
+
+        try {
+            await dynamoDb.delete(params).promise();  // Delete the todo
+            pubSub.publish(TODO_DELETED, { todoDeleted: id });
+            return true;
+        } catch (error) {
+            console.error("Error deleting todo", error);
+            throw new Error("Could not delete todo");
         }
-        todos.splice(todoIndex, 1);
-        pubSub.publish(TODO_DELETED, { todoDeleted: id });
-        return true;
-    }
+    },
 };
 
-
-export { pubSub, TODO_CREATED, TODO_UPDATED, TODO_DELETED,todos };
+// Export PubSub and constants for subscriptions
+export { pubSub, TODO_CREATED, TODO_UPDATED, TODO_DELETED };
