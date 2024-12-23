@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { resolvers } from './resolvers';
 
+require('dotenv').config();
 async function startServer() {
   // Load schema
   const typeDefs = gql`
