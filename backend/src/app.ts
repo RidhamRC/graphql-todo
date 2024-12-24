@@ -23,7 +23,7 @@ async function startServer() {
 
   // Enable CORS (adjust as needed for your front-end URLs)
   app.use(cors({
-    origin: ['https://studio.apollographql.com', 'http://assignment2frontend.s3-website-us-east-1.amazonaws.com/'], // Add your front-end URL(s)
+    origin: ['https://studio.apollographql.com', 'http://assignment2frontend.s3-website-us-east-1.amazonaws.com'], // Add your front-end URL(s)
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   }));
