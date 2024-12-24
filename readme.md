@@ -22,7 +22,7 @@ query GetTodoById($id: String!) {
 
 # Create Todo
 mutation CreateTodo {
-  createTodo(title: "Help Divya", description: "Make Divya Smile") {
+  createTodo(title: "Interview", description: "Complete assignment") {
     id
     title
     description

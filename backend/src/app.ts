@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import { ApolloServer, gql } from 'apollo-server-express';
 import fs from 'fs';
 import path from 'path';
+import cors from 'cors';  // Import CORS
 import { resolvers } from './resolvers';
 
 require('dotenv').config();
@@ -19,6 +20,13 @@ async function startServer() {
 
   // Create Express app
   const app: Application = express();
+
+  // Enable CORS (adjust as needed for your front-end URLs)
+  app.use(cors({
+    origin: ['https://studio.apollographql.com', 'http://assignment2frontend.s3-website-us-east-1.amazonaws.com/'], // Add your front-end URL(s)
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }));
 
   // Apply Apollo middleware
   server.applyMiddleware({ app });

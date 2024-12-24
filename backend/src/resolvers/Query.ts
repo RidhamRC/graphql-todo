@@ -1,9 +1,7 @@
 import AWS from "aws-sdk";
 
-
-
 AWS.config.update({
-    region: 'us-east-1',  // Replace with your region, e.g., "us-west-2", "eu-central-1"
+    region: process.env.AWS_REGION,  // Replace with your region, e.g., "us-west-2", "eu-central-1"
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,  // Replace with your access key
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
