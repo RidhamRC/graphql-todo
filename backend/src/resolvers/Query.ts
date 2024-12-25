@@ -1,4 +1,5 @@
 import AWS from "aws-sdk";
+require('dotenv').config();
 
 AWS.config.update({
     region: process.env.AWS_REGION,  // Replace with your region, e.g., "us-west-2", "eu-central-1"
@@ -6,7 +7,7 @@ AWS.config.update({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
 
-
+console.log(process.env.AWS_REGION,process.env.AWS_ACCESS_KEY_ID,process.env.AWS_SECRET_ACCESS_KEY);
 // Configure AWS SDK
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
@@ -24,6 +25,9 @@ export const Query = {
             const result = await dynamoDb.scan(params).promise();  // Scan to get all todos
             return result.Items;  // Return the list of todos
         } catch (error) {
+            console.log('AWS_REGION:', process.env.AWS_REGION);
+            console.log('AWS_ACCESS_KEY_ID:', process.env.AWS_ACCESS_KEY_ID);
+            console.log('AWS_SECRET_ACCESS_KEY:', process.env.AWS_SECRET_ACCESS_KEY);
             console.error("Error fetching todos", error);
             throw new Error("Could not fetch todos");
         }

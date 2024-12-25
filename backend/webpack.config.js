@@ -1,6 +1,7 @@
 const path = require("path");
 const nodeExternals = require("webpack-node-externals");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const DotenvWebpackPlugin = require("dotenv-webpack");
 
 module.exports = {
   mode: "production", // Use "development" for debugging or "production" for optimized builds
@@ -30,8 +31,10 @@ module.exports = {
         {
           from: "src/schema/schema.graphql", // Copy GraphQL schema
           to: "schema/schema.graphql", // Keep the relative path in the dist folder
-        },
+        }
       ],
     }),
+    new DotenvWebpackPlugin(),
+
   ],
 };

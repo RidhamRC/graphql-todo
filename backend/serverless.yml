@@ -6,12 +6,18 @@ provider:
   region: us-east-1
   deploymentBucket:
     name: ridhambuckett
+
+
+
   iamRoleStatements:
-    - Effect: "Allow"
-      Action:
-        - "dynamodb:Scan"
-        - "dynamodb:Query"        # Add any other actions your Lambda function requires
-      Resource: arn:aws:dynamodb:us-east-1:418295713290:table/Todos
+  - Effect: "Allow"
+    Action:
+      - "dynamodb:Scan"
+      - "dynamodb:Query"
+      - "dynamodb:GetItem"
+      - "dynamodb:PutItem"
+      - "dynamodb:UpdateItem"
+    Resource: arn:aws:dynamodb:us-east-1:418295713290:table/Todos
 
 functions:
   graphql:
